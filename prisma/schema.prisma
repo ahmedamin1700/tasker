@@ -19,5 +19,26 @@ model User {
   lastName  String?
   email     String?
 
+  Task Task[]
+
   @@map("users")
+}
+
+model Task {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  title       String
+  description String
+  status      Status   @default(open)
+  userId      Int
+  owner       User     @relation(fields: [userId], references: [id])
+
+  @@map("tasks")
+}
+
+enum Status {
+  open
+  onHold
+  closed
 }
