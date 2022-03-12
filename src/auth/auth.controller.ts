@@ -3,14 +3,16 @@ import {
   Controller,
   Get,
   HttpCode,
+  HttpException,
+  HttpStatus,
   Post,
   UseGuards,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { AuthService } from './auth.service';
-import { GetUser } from './decorator';
+import { GetUser } from './decorators';
 import { CreateUserDto } from './dto';
-import { JwtAuthGuard, LocalAuthGuard } from './guard';
+import { JwtAuthGuard, LocalAuthGuard } from './guards';
 
 @Controller('auth')
 export class AuthController {
@@ -18,8 +20,11 @@ export class AuthController {
 
   @Post('register')
   async register(@Body() input: CreateUserDto) {
-    const user = await this.authService.register(input);
-    return user;
+    try {
+      return await this.authService.register(input);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   @UseGuards(LocalAuthGuard)

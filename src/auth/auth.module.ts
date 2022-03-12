@@ -5,6 +5,7 @@ import { UserModule } from 'src/user/user.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy, LocalStrategy } from './strategy';
+import { Token } from './utils';
 
 @Module({
   imports: [
@@ -12,7 +13,7 @@ import { JwtStrategy, LocalStrategy } from './strategy';
     PassportModule,
     JwtModule.register({ secret: process.env.JWT_SECRET }),
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy, Token],
   controllers: [AuthController],
 })
 export class AuthModule {}

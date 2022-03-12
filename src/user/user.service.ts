@@ -32,4 +32,11 @@ export class UserService {
       throw new InternalServerErrorException(error);
     }
   }
+
+  async updateRefreshTokenHash(userId: number, refreshTokenHash: string) {
+    return await this.prisma.user.update({
+      where: { id: userId },
+      data: { refreshTokenHash },
+    });
+  }
 }
