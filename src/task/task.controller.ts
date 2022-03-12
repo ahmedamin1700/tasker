@@ -11,8 +11,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
-import { GetUser } from 'src/auth/decorator';
-import { JwtAuthGuard, OwnerGuard } from 'src/auth/guard';
+import { GetUser } from 'src/auth/decorators';
+import { JwtAuthGuard, OwnerGuard } from 'src/auth/guards';
 import { CreateTaskDto, UpdateTaskDto } from './dto';
 import { TaskService } from './task.service';
 
