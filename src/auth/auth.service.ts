@@ -1,21 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import * as argon from 'argon2';
-
-import { CreateUserDto } from './dto';
-import { UserService } from 'src/user/user.service';
-import { User } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
+import { User } from '@prisma/client';
+import * as argon from 'argon2';
+import { UserService } from 'src/user/user.service';
+import { CreateUserDto } from './dto';
+import { Token } from './utils';
 
 @Injectable()
 export class AuthService {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
+    private token: Token,
   ) {}
+
+  async updateRefreshToken(userId: number, refreshToken: string) {
+    const refreshTokenHash = await argon.hash(refreshToken);
+    await this.userService.updateRefreshTokenHash(userId, refreshTokenHash);
+  }
 
   async register(input: CreateUserDto) {
     let user = await this.userService.findUserByUsername(input.username);
-    console.log(user);
 
     if (user) {
       throw new Error(`user already exists with username ${input.username}`);
@@ -26,7 +31,10 @@ export class AuthService {
       ...input,
       password: hashedPassword,
     });
-    return user;
+
+    const tokens = await this.token.generateTokens(user.id, user.username);
+    await this.updateRefreshToken(user.id, tokens.refresh_token);
+    return tokens;
   }
 
   async validateUser(username: string, password: string) {
@@ -40,10 +48,32 @@ export class AuthService {
   }
 
   async login(user: User) {
-    const payload = { username: user.username, sub: user.id };
+    const tokens = await this.token.generateTokens(user.id, user.username);
+    await this.updateRefreshToken(user.id, tokens.refresh_token);
+    return tokens;
+  }
 
-    return {
-      access_token: this.jwtService.sign(payload),
-    };
+  async logout(userId: number) {
+    return await this.userService.deleteRefreshTokenHash(userId);
+  }
+
+  async refreshToken(userId: number, refreshToken: string) {
+    const user = await this.userService.findUserById(userId);
+
+    if (!user) throw new Error('no user exists with this id');
+
+    let valid: boolean;
+
+    try {
+      valid = await argon.verify(user.refreshTokenHash, refreshToken);
+    } catch (error) {
+      throw new Error('something wrong with the token.');
+    }
+
+    if (!valid) throw new Error('something wrong with the token.');
+
+    const tokens = await this.token.generateTokens(user.id, user.username);
+    await this.updateRefreshToken(user.id, tokens.refresh_token);
+    return tokens;
   }
 }
