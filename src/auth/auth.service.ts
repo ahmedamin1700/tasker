@@ -52,4 +52,28 @@ export class AuthService {
     await this.updateRefreshToken(user.id, tokens.refresh_token);
     return tokens;
   }
+
+  async logout(userId: number) {
+    return await this.userService.deleteRefreshTokenHash(userId);
+  }
+
+  async refreshToken(userId: number, refreshToken: string) {
+    const user = await this.userService.findUserById(userId);
+
+    if (!user) throw new Error('no user exists with this id');
+
+    let valid: boolean;
+
+    try {
+      valid = await argon.verify(user.refreshTokenHash, refreshToken);
+    } catch (error) {
+      throw new Error('something wrong with the token.');
+    }
+
+    if (!valid) throw new Error('something wrong with the token.');
+
+    const tokens = await this.token.generateTokens(user.id, user.username);
+    await this.updateRefreshToken(user.id, tokens.refresh_token);
+    return tokens;
+  }
 }

@@ -12,11 +12,10 @@ import {
 } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { GetUser } from 'src/auth/decorators';
-import { JwtAuthGuard, OwnerGuard } from 'src/auth/guards';
+import { OwnerGuard } from 'src/auth/guards';
 import { CreateTaskDto, UpdateTaskDto } from './dto';
 import { TaskService } from './task.service';
 
-@UseGuards(JwtAuthGuard)
 @Controller('tasks')
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}

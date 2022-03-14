@@ -18,6 +18,7 @@ export class UserService {
   async findUserById(id: number) {
     try {
       const user = await this.prisma.user.findUnique({ where: { id } });
+
       return user;
     } catch (error) {
       throw new InternalServerErrorException(error);
@@ -37,6 +38,27 @@ export class UserService {
     return await this.prisma.user.update({
       where: { id: userId },
       data: { refreshTokenHash },
+    });
+  }
+
+  // async refreshToken(userId: number, refreshToken: string) {
+  //   // const user = await this.findUserById(userId);
+  //   // if (!user) throw new Error('no user exists with this id.');
+
+  //   // const valid = await argon
+  // }
+
+  async deleteRefreshTokenHash(userId: number) {
+    await this.prisma.user.updateMany({
+      where: {
+        id: userId,
+        refreshTokenHash: {
+          not: null,
+        },
+      },
+      data: {
+        refreshTokenHash: null,
+      },
     });
   }
 }

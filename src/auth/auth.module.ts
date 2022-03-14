@@ -4,7 +4,11 @@ import { PassportModule } from '@nestjs/passport';
 import { UserModule } from 'src/user/user.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { JwtStrategy, LocalStrategy } from './strategy';
+import {
+  LocalStrategy,
+  AccessTokenStrategy,
+  RefreshTokenStrategy,
+} from './strategy';
 import { Token } from './utils';
 
 @Module({
@@ -13,7 +17,13 @@ import { Token } from './utils';
     PassportModule,
     JwtModule.register({ secret: process.env.JWT_SECRET }),
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy, Token],
+  providers: [
+    AuthService,
+    LocalStrategy,
+    AccessTokenStrategy,
+    RefreshTokenStrategy,
+    Token,
+  ],
   controllers: [AuthController],
 })
 export class AuthModule {}
